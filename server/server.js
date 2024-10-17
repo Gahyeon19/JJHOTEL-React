@@ -2,22 +2,46 @@ import express from 'express'
 import cors from 'cors'
 import mysql from 'mysql2'
 import nodemailer from 'nodemailer'
+import path from 'path'
+import { fileURLToPath } from 'url';
 
 const app = express()
 app.use(cors())
 app.use(express.json())
 
 const connection = mysql.createConnection({
-    host: 'localhost',
-    port: 3306,
-    user: 'root',
-    password: '1111',
-    database: 'jjhotel'
+  host: 'localhost',
+  port: 3307,
+  user: 'root',
+  password: '1111',
+  database: 'jjhotel'
 });
 
-connection.connect()
+connection.connect((err) => {
+if (err) {
+  console.error('MySQL 연결 실패:', err);
+} else {
+  console.log('MySQL 연결 성공');
+}
+});
 
-app.listen(3003, () => console.log("ready"))
+// __dirname 설정 (ES 모듈용)
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+// 정적 파일 서빙 설정 (dist 폴더)
+app.use(express.static(path.join(__dirname, 'dist')));
+
+// 모든 경로에 대해 index.html 서빙 (React 라우팅)
+app.get('*', (req, res) => {
+res.sendFile(path.join(__dirname, 'dist', 'index.html'));
+});
+
+// 서버 실행
+const port = 3003;
+app.listen(port, () => {
+console.log(`Server is running on http://localhost:${port}`);
+});
 
 // 예약하기
 app.post('/reservation', (req, res) => {
